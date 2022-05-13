@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Error};
 use anyhow::{ensure, Context};
 use graph::blockchain::TriggerWithHandler;
-use graph::components::store::StoredDynamicDataSource;
+use graph::components::store::{bytes_from_json, json_from_bytes, StoredDynamicDataSource};
 use graph::prelude::ethabi::ethereum_types::H160;
 use graph::prelude::ethabi::StateMutability;
 use graph::prelude::futures03::future::try_join;
@@ -118,9 +118,11 @@ impl blockchain::DataSource<Chain> for DataSource {
     }
 
     fn as_stored_dynamic_data_source(&self) -> StoredDynamicDataSource {
+        // The `params` field stores the data source address as a base64 string.
+        let params = self.address.map(|addr| json_from_bytes(addr.as_ref()));
         StoredDynamicDataSource {
             name: self.name.to_owned(),
-            address: self.address.clone(),
+            params,
             context: self
                 .context
                 .as_ref()
@@ -136,7 +138,7 @@ impl blockchain::DataSource<Chain> for DataSource {
     ) -> Result<Self, Error> {
         let StoredDynamicDataSource {
             name: _,
-            address,
+            params,
             context,
             creation_block,
         } = stored;
@@ -145,6 +147,10 @@ impl blockchain::DataSource<Chain> for DataSource {
 
         let contract_abi = template.mapping.find_abi(&template.source.abi)?;
 
+        let address = params
+            .map(|json| bytes_from_json(&json))
+            .transpose()?
+            .map(|x| H160::from_slice(&x));
         Ok(DataSource {
             kind: template.kind.to_string(),
             network: template.network.as_ref().map(|s| s.to_string()),

@@ -33,6 +33,7 @@ git-testament = "0.2.0"
 itertools = "0.10.3"
 pin-utils = "0.1"
 hex = "0.4.3"
+base64 = "0.13.0"
 
 [dev-dependencies]
 futures = "0.3"

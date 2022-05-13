@@ -4,7 +4,6 @@ mod traits;
 
 pub use cache::{CachedEthereumCall, EntityCache, ModificationsAndCache};
 pub use err::StoreError;
-use ethabi::Address;
 use itertools::Itertools;
 use stable_hash::{FieldAddress, StableHash};
 use stable_hash_legacy::SequenceNumber;
@@ -833,9 +832,22 @@ pub enum UnfailOutcome {
 #[derive(Clone)]
 pub struct StoredDynamicDataSource {
     pub name: String,
-    pub address: Option<Address>,
+    pub params: Option<serde_json::Value>,
     pub context: Option<serde_json::Value>,
     pub creation_block: Option<BlockNumber>,
+}
+
+// Convert a base64 json string to bytes.
+pub fn bytes_from_json(json: &serde_json::Value) -> Result<Vec<u8>, anyhow::Error> {
+    match json {
+        serde_json::Value::String(address) => Ok(base64::decode(address)?),
+        _ => Err(anyhow!("expected base64 json string, found {:?}", json)),
+    }
+}
+
+// Serializes bytes as a base64 json string.
+pub fn json_from_bytes(bytes: &[u8]) -> serde_json::Value {
+    serde_json::Value::String(base64::encode(bytes))
 }
 
 /// An internal identifer for the specific instance of a deployment. The

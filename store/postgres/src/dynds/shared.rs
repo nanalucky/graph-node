@@ -10,11 +10,11 @@ use diesel::{
 use diesel::{insert_into, pg::PgConnection};
 
 use graph::{
-    components::store::StoredDynamicDataSource,
+    components::store::{bytes_from_json, json_from_bytes, StoredDynamicDataSource},
     constraint_violation,
     prelude::{
-        bigdecimal::ToPrimitive, serde_json, web3::types::H160, BigDecimal, BlockNumber, BlockPtr,
-        DeploymentHash, StoreError,
+        bigdecimal::ToPrimitive, serde_json, BigDecimal, BlockNumber, BlockPtr, DeploymentHash,
+        StoreError,
     },
 };
 
@@ -63,17 +63,16 @@ pub(super) fn load(
     for (vid, name, context, address, creation_block) in dds.into_iter() {
         if address.len() != 20 {
             return Err(constraint_violation!(
-            "Data source address 0x`{:?}` for dynamic data source {} in deployment {} should have be 20 bytes long but is {} bytes long",
-            address, vid, id,
-            address.len()
-        ));
+                "Data source address `0x{:?}` for dynamic data source {} should be 20 bytes long but is {} bytes long",
+                address, vid,
+                address.len()
+            ));
         }
-        let address = Some(H160::from_slice(address.as_slice()));
 
         let creation_block = creation_block.to_i32();
         let data_source = StoredDynamicDataSource {
             name,
-            address,
+            params: Some(json_from_bytes(&address)),
             context: context.map(|ctx| serde_json::from_str(&ctx)).transpose()?,
             creation_block,
         };
@@ -107,12 +106,12 @@ pub(super) fn insert(
         .map(|ds| {
             let StoredDynamicDataSource {
                 name,
-                address,
+                params,
                 context,
                 creation_block: _,
             } = ds;
-            let address = match address {
-                Some(address) => address.as_bytes().to_vec(),
+            let address = match params {
+                Some(params) => bytes_from_json(params)?,
                 None => {
                     return Err(constraint_violation!(
                         "dynamic data sources must have an address, but `{}` has none",
