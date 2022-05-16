@@ -2765,9 +2765,8 @@ dependencies = [
 
 [[package]]
 name = "parity-wasm"
-version = "0.42.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be5e13c266502aadf83426d87d81a0f5d1ef45b8027f5a471c360abfe4bfae92"
+version = "0.45.0"
+source = "git+https://github.com/mangas/parity-wasm?branch=master#9f5d49d2fb5ea289ea48531c76606ce1545b7234"
 
 [[package]]
 name = "parking_lot"
@@ -4803,8 +4802,7 @@ checksum = "2e0c4a743a309662d45f4ede961d7afa4ba4131a59a639f29b0069c3798bbcc2"
 [[package]]
 name = "wasm-instrument"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "962e5b0401bbb6c887f54e69b8c496ea36f704df65db73e81fd5ff8dc3e63a9f"
+source = "git+https://github.com/mangas/wasm-instrument?branch=master#88ca471992bf9908fc678d3174622b0f3199edd3"
 dependencies = [
  "parity-wasm",
 ]

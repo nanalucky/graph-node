@@ -156,7 +156,7 @@ impl ValidModule {
         let parity_module = parity_wasm::elements::Module::from_bytes(raw_module)?;
         let parity_module = wasm_instrument::gas_metering::inject(parity_module, &GasRules, "gas")
             .map_err(|_| anyhow!("Failed to inject gas counter"))?;
-        let raw_module = parity_module.to_bytes()?;
+        let raw_module = parity_module.into_bytes()?;
 
         // We currently use Cranelift as a compilation engine. Cranelift is an optimizing compiler,
         // but that should not cause determinism issues since it adheres to the Wasm spec. Still we
